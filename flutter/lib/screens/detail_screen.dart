@@ -7,6 +7,7 @@ import '../routes.dart';
 import '../state/app_state.dart';
 import '../theme.dart';
 import '../widgets/animated_grams.dart';
+import '../widgets/dancing_skeleton.dart';
 import 'edit_screen.dart';
 
 class DetailScreen extends StatefulWidget {
@@ -32,13 +33,11 @@ class _DetailScreenState extends State<DetailScreen> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Brand.bg,
-        title: Hero(
-          tag: 'salad-${salad.id}',
-          child: Material(
-            color: Colors.transparent,
-            child: Text(salad.name,
-                style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 18)),
-          ),
+        title: Text(
+          salad.name,
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+          style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 18),
         ),
       ),
       body: ListView(
@@ -49,7 +48,7 @@ class _DetailScreenState extends State<DetailScreen> {
             decoration: BoxDecoration(
               color: Brand.surface,
               borderRadius: BorderRadius.circular(18),
-              border: Border.all(color: Brand.brown.withValues(alpha: 0.5)),
+              border: Border.all(color: Brand.amber.withValues(alpha: 0.35)),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -152,6 +151,7 @@ class _IngredientsTable extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     const header = TextStyle(color: Brand.muted, fontSize: 13);
+    const amberBold = TextStyle(color: Brand.amber, fontWeight: FontWeight.w700);
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
@@ -165,8 +165,8 @@ class _IngredientsTable extends StatelessWidget {
               const Expanded(child: Text('Продукт', style: header)),
               const SizedBox(width: 90, child: Text('на 100 г', style: header, textAlign: TextAlign.right)),
               SizedBox(
-                width: 110,
-                child: Text('для $portions порц.', style: header, textAlign: TextAlign.right),
+                width: 120,
+                child: Text('для $portions порц., кг', style: header, textAlign: TextAlign.right),
               ),
             ],
           ),
@@ -179,13 +179,16 @@ class _IngredientsTable extends StatelessWidget {
                   Expanded(child: Text(i.name)),
                   SizedBox(
                     width: 90,
-                    child: AnimatedGrams(value: salad.per100(i.grams), style: const TextStyle(fontWeight: FontWeight.w600)),
+                    child: AnimatedGrams(
+                      value: salad.per100(i.grams),
+                      style: const TextStyle(fontWeight: FontWeight.w600),
+                    ),
                   ),
                   SizedBox(
-                    width: 110,
-                    child: AnimatedGrams(
+                    width: 120,
+                    child: AnimatedKg(
                       value: salad.per100(i.grams) * portions,
-                      style: const TextStyle(color: Brand.amber, fontWeight: FontWeight.w700),
+                      style: amberBold,
                     ),
                   ),
                 ],
@@ -194,17 +197,21 @@ class _IngredientsTable extends StatelessWidget {
           const Divider(color: Brand.surface2, height: 20),
           Row(
             children: [
-              const Expanded(child: Text('Итого сырья', style: TextStyle(fontWeight: FontWeight.w700))),
-              SizedBox(
-                width: 90,
-                child: AnimatedGrams(value: salad.totalPer100, style: const TextStyle(fontWeight: FontWeight.w700)),
+              const DancingSkeleton(size: 28),
+              const SizedBox(width: 8),
+              const Expanded(
+                child: Text('Итого сырья', style: TextStyle(fontWeight: FontWeight.w700)),
               ),
               SizedBox(
-                width: 110,
+                width: 90,
                 child: AnimatedGrams(
-                  value: salad.totalPer100 * portions,
-                  style: const TextStyle(color: Brand.amber, fontWeight: FontWeight.w700),
+                  value: salad.totalPer100,
+                  style: const TextStyle(fontWeight: FontWeight.w700),
                 ),
+              ),
+              SizedBox(
+                width: 120,
+                child: AnimatedKg(value: salad.totalPer100 * portions, style: amberBold),
               ),
             ],
           ),

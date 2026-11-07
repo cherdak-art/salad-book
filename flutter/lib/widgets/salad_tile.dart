@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../models.dart';
 import '../theme.dart';
 
-// Плитка салата: при нажатии слегка сжимается
+// Плитка салата: при нажатии слегка сжимается, без Hero (текст не «рвётся» при переходе)
 class SaladTile extends StatefulWidget {
   const SaladTile({super.key, required this.salad, required this.onTap});
 
@@ -30,28 +30,43 @@ class _SaladTileState extends State<SaladTile> {
         scale: _pressed ? 0.94 : 1,
         duration: const Duration(milliseconds: 120),
         curve: Curves.easeOut,
-        child: Container(
-          padding: const EdgeInsets.all(12),
-          alignment: Alignment.center,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(18),
-            gradient: const LinearGradient(
+            gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              colors: [Brand.surface2, Brand.surface],
+              colors: [
+                Brand.indigo.withValues(alpha: 0.55),
+                Brand.surface,
+              ],
             ),
-            border: Border.all(color: Brand.brown.withValues(alpha: 0.55)),
+            border: Border.all(color: Brand.amber.withValues(alpha: 0.35)),
           ),
-          child: Hero(
-            tag: 'salad-${widget.salad.id}',
-            child: Material(
-              color: Colors.transparent,
-              child: Text(
-                widget.salad.name,
-                textAlign: TextAlign.center,
-                style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15, height: 1.25),
+          child: Stack(
+            children: [
+              Center(
+                child: Text(
+                  widget.salad.name,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15, height: 1.25),
+                ),
               ),
-            ),
+              // печать ханко в углу
+              Positioned(
+                top: 0,
+                right: 0,
+                child: Container(
+                  width: 8,
+                  height: 8,
+                  decoration: const BoxDecoration(color: Brand.danger, shape: BoxShape.circle),
+                ),
+              ),
+            ],
           ),
         ),
       ),

@@ -1,16 +1,18 @@
 import 'package:flutter/material.dart';
 
-// Цвета: тёмная основа, коричневый из логотипа «Ладушки» и янтарный акцент
+// Японская палитра: сумі (тушь), вашi (рисовая бумага), то (киноварь), ай (индиго), кин (золото),
+// коричневый из логотипа «Ладушки»
 class Brand {
-  static const bg = Color(0xFF120C08);
-  static const surface = Color(0xFF1E1510);
-  static const surface2 = Color(0xFF2A1E17);
-  static const brown = Color(0xFF9A5A2B);
-  static const amber = Color(0xFFF2B35A);
-  static const cream = Color(0xFFF4EFE9);
-  static const text = Color(0xFFF6EDE3);
-  static const muted = Color(0xFFA89383);
-  static const danger = Color(0xFFE05A4F);
+  static const bg = Color(0xFF14110F); // сумі
+  static const surface = Color(0xFF1F1A17);
+  static const surface2 = Color(0xFF2B231E);
+  static const brown = Color(0xFF8B5A2B); // из логотипа
+  static const indigo = Color(0xFF2E4057); // ай
+  static const amber = Color(0xFFE0B25B); // кин (золотой акцент)
+  static const cream = Color(0xFFF3ECE0); // вашi
+  static const text = Color(0xFFF3ECE0);
+  static const muted = Color(0xFFA8978A);
+  static const danger = Color(0xFFD6452E); // то (киноварь)
 }
 
 ThemeData buildTheme() {
