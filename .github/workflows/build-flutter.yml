@@ -30,6 +30,8 @@ jobs:
           sed -i 's|<manifest xmlns:android="http://schemas.android.com/apk/res/android">|<manifest xmlns:android="http://schemas.android.com/apk/res/android">\n    <uses-permission android:name="android.permission.INTERNET"/>|' $MANIFEST
           sed -i 's|android:label="ladushki_salads"|android:label="Ладушки салаты"|' $MANIFEST
           cp -r icons/mipmap-* android/app/src/main/res/
+          # плагины требуют compileSdk 36
+          sed -i 's/flutter\.compileSdkVersion/36/g' android/app/build.gradle* || true
 
       - run: flutter pub get
 
