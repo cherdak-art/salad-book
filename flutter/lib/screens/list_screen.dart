@@ -1,6 +1,4 @@
-import 'dart:io';
-
-import 'package:file_picker/file_picker.dart';
+import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
@@ -102,14 +100,11 @@ class ListScreen extends StatelessWidget {
       case 'export':
         await Share.share(s.exportJson(), subject: 'Резервная копия салатов');
       case 'import':
-        final result = await FilePicker.platform.pickFiles(
-          type: FileType.custom,
-          allowedExtensions: const ['json'],
-        );
-        final path = result?.files.single.path;
-        if (path == null) return;
+        const jsonType = XTypeGroup(label: 'JSON', extensions: ['json']);
+        final file = await openFile(acceptedTypeGroups: const [jsonType]);
+        if (file == null) return;
         try {
-          final text = await File(path).readAsString();
+          final text = await file.readAsString();
           final n = await s.importJson(text);
           messenger.showSnackBar(SnackBar(content: Text('Импортировано салатов: $n')));
         } catch (e) {
