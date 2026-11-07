@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#2e7d4f">
+<title>Мои салаты</title>
+<style>
+:root{--bg:#f5f6f2;--card:#fff;--ink:#222;--muted:#777;--accent:#2e7d4f;--danger:#c0392b;--line:#e2e4de}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,-apple-system,Roboto,sans-serif;background:var(--bg);color:var(--ink);font-size:16px;-webkit-text-size-adjust:100%}
+header{position:sticky;top:0;background:var(--accent);color:#fff;padding:14px 16px;z-index:5}
+header h1{font-size:19px;margin:0}
+main{padding:12px;max-width:640px;margin:0 auto;padding-bottom:40px}
+button{font:inherit;border:0;border-radius:10px;padding:11px 14px;background:var(--accent);color:#fff;cursor:pointer}
+button.ghost{background:transparent;color:var(--accent);border:1px solid var(--accent)}
+button.danger{background:var(--danger)}
+button.small{padding:6px 10px;font-size:14px}
+button.block{width:100%}
+input{font:inherit;width:100%;padding:10px;border:1px solid var(--line);border-radius:8px;background:#fff;color:var(--ink)}
+.card{background:var(--card);border-radius:12px;padding:14px;margin-bottom:10px;box-shadow:0 1px 2px rgba(0,0,0,.05)}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.muted{color:var(--muted);font-size:14px}
+.title{font-weight:600;font-size:17px}
+.big{font-size:20px}
+.label{display:block;font-size:14px;color:var(--muted);margin:14px 0 6px}
+.recipe-item{cursor:pointer}
+.portion-input{width:100px}
+.ing-row{display:grid;grid-template-columns:1fr 100px 40px;gap:6px;margin-bottom:6px}
+table{width:100%;border-collapse:collapse}
+th,td{padding:9px 4px;border-bottom:1px solid var(--line);text-align:left;vertical-align:middle}
+th{font-size:13px;color:var(--muted);font-weight:500}
+.num{text-align:right;white-space:nowrap}
+tr.total td{font-weight:600;border-bottom:0}
+</style>
+</head>
+<body>
+<header><h1>🥗 Мои салаты</h1></header>
+<main id="app"></main>
+<input type="file" id="imp" accept="application/json,.json" hidden onchange="importData(this)">
+
+<script>
+const KEY = 'salad-recipes-v1';
+let recipes = [];
+try { recipes = JSON.parse(localStorage.getItem(KEY) || '[]'); } catch (e) { recipes = []; }
+let view = { name: 'list', id: null };
+let draft = null;
+let search = '';
+let portions = 10;
+
+function save() { localStorage.setItem(KEY, JSON.stringify(recipes)); }
+function newId() { return 'r' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
+function esc(s) {
+  return String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+function num(v) {
+  const n = parseFloat(String(v ?? '').replace(',', '.'));
+  return (isNaN(n) || n < 0) ? 0 : n;
+}
+function fmt(x) {
+  if (!isFinite(x) || x <= 0) return '0';
+  if (x >= 10) return String(Math.round(x));
+  return String(Math.round(x * 10) / 10).replace('.', ',');
+}
+
+// ---------- расчёты ----------
+function rawSum(r) { return r.items.reduce((s, i) => s + num(i.grams), 0); }
+function finalW(r) { const f = num(r.finalWeight); return f > 0 ? f : rawSum(r); }
+// сколько грамм продукта уходит на 100 г готового салата
+function per100(r, grams) { const w = finalW(r); return w > 0 ? num(grams) / w * 100 : 0; }
+
+// ---------- навигация ----------
+function go(name, id) {
+  view = { name, id: id || null };
+  if (name === 'edit') {
+    const r = id ? recipes.find(x => x.id === id) : null;
+    if (r) {
+      draft = {
+        id: r.id,
+        name: r.name,
+        finalWeight: r.finalWeight ? String(r.finalWeight) : '',
+        items: r.items.map(i => ({ name: i.name, grams: String(i.grams) }))
+      };
+    } else {
+      draft = { id: null, name: '', finalWeight: '', items: [{ name: '', grams: '' }] };
+    }
+  }
+  render();
+  window.scrollTo(0, 0);
+}
+
+function render() {
+  const app = document.getElementById('app');
+  if (view.name === 'list') app.innerHTML = listHTML();
+  else if (view.name === 'recipe') app.innerHTML = recipeHTML(view.id);
+  else app.innerHTML = editHTML();
+}
+
+// ---------- список ----------
+function filteredList() {
+  const q = search.trim().toLowerCase();
+  return recipes
+    .filter(r => r.name.toLowerCase().includes(q))
+    .sort((a, b) => a.name.localeCompare(b.name, 'ru'));
+}
+
+function itemsHTML(list) {
+  if (!recipes.length) return '<p class="muted">Пока нет ни одного салата. Нажмите «+ Новый салат».</p>';
+  if (!list.length) return '<p class="muted">Ничего не найдено.</p>';
+  return list.map(r => `
+    <div class="card recipe-item" onclick="go('recipe','${r.id}')">
+      <div class="title">${esc(r.name)}</div>
+      <div class="muted">${r.items.length} прод. · выход ${fmt(finalW(r))} г</div>
+    </div>`).join('');
+}
+
+function listHTML() {
+  return `
+    <div class="card">
+      <input placeholder="Поиск салата" value="${esc(search)}"
+        oninput="search=this.value;document.getElementById('items').innerHTML=itemsHTML(filteredList())">
+    </div>
+    <button class="block" onclick="go('edit')">+ Новый салат</button>
+    <div id="items" style="margin-top:12px">${itemsHTML(filteredList())}</div>
+    <div class="card" style="margin-top:18px">
+      <div class="muted" style="margin-bottom:10px">Данные хранятся в этом браузере. Делайте резервную копию: экспорт сохранит файл, импорт вернёт рецепты обратно.</div>
+      <div class="row">
+        <button class="ghost" onclick="exportData()">Экспорт</button>
+        <button class="ghost" onclick="importClick()">Импорт</button>
+      </div>
+    </div>`;
+}
+
+// ---------- просмотр рецепта ----------
+function recipeHTML(id) {
+  const r = recipes.find(x => x.id === id);
+  if (!r) return '<p>Салат не найден.</p><button class="ghost" onclick="go(\'list\')">К списку</button>';
+
+  const rows = r.items.map(i => {
+    const p = per100(r, i.grams);
+    return `<tr>
+      <td>${esc(i.name)}</td>
+      <td class="num">${fmt(p)} г</td>
+      <td class="num" data-per="${p}">${fmt(p * portions)} г</td>
+    </tr>`;
+  }).join('');
+
+  const totalPer = r.items.reduce((s, i) => s + per100(r, i.grams), 0);
+
+  return `
+    <button class="ghost small" onclick="go('list')">← К списку</button>
+    <div class="card" style="margin-top:10px">
+      <div class="big">${esc(r.name)}</div>
+      <div class="muted" style="margin-top:4px">Выход готового салата: ${fmt(finalW(r))} г${num(r.finalWeight) > 0 ? ' (после готовки)' : ''}</div>
+
+      <div class="row" style="margin:14px 0">
+        <span>Порций по 100 г:</span>
+        <input class="portion-input" type="number" inputmode="numeric" min="1" value="${portions}" oninput="setPortions(this.value)">
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Продукт</th>
+            <th class="num">на 100 г</th>
+            <th class="num">для <span id="pn">${portions}</span> порц.</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${rows}
+          <tr class="total">
+            <td>Итого сырья</td>
+            <td class="num">${fmt(totalPer)} г</td>
+            <td class="num" data-per="${totalPer}">${fmt(totalPer * portions)} г</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="muted" style="margin-top:10px">Расчёт: вес продукта ÷ вес готового салата × 100 г.</div>
+    </div>
+
+    <div class="row" style="margin-top:6px">
+      <button class="ghost" onclick="go('edit','${r.id}')">Изменить</button>
+      <button class="danger" onclick="deleteRecipe('${r.id}')">Удалить</button>
+    </div>`;
+}
+
+function setPortions(v) {
+  portions = Math.max(1, Math.round(num(v)) || 1);
+  const pn = document.getElementById('pn');
+  if (pn) pn.textContent = portions;
+  document.querySelectorAll('[data-per]').forEach(el => {
+    el.textContent = fmt(num(el.dataset.per) * portions) + ' г';
+  });
+}
+
+function deleteRecipe(id) {
+  const r = recipes.find(x => x.id === id);
+  if (!r || !confirm(`Удалить «${r.name}»?`)) return;
+  recipes = recipes.filter(x => x.id !== id);
+  save();
+  go('list');
+}
+
+// ---------- редактирование ----------
+function previewHTML(d) {
+  const items = d.items.filter(i => i.name.trim() && num(i.grams) > 0);
+  if (!items.length) return '<span class="muted">Добавьте продукты с весом</span>';
+  return '<table>' + items.map(i =>
+    `<tr><td>${esc(i.name)}</td><td class="num">${fmt(per100(d, i.grams))} г</td></tr>`
+  ).join('') + '</table>';
+}
+
+function updPreview() {
+  document.getElementById('sum').textContent = fmt(rawSum(draft));
+  document.getElementById('fw').textContent = fmt(finalW(draft));
+  document.getElementById('prev').innerHTML = previewHTML(draft);
+}
+
+function editHTML() {
+  const back = draft.id ? `go('recipe','${draft.id}')` : `go('list')`;
+  const rows = draft.items.map((it, i) => `
+    <div class="ing-row">
+      <input placeholder="Продукт" value="${esc(it.name)}" oninput="draft.items[${i}].name=this.value;updPreview()">
+      <input inputmode="decimal" placeholder="граммы" value="${esc(it.grams)}" oninput="draft.items[${i}].grams=this.value;updPreview()">
+      <button class="ghost small" onclick="delRow(${i})" aria-label="Удалить строку">✕</button>
+    </div>`).join('');
+
+  return `
+    <button class="ghost small" onclick="${back}">← Отмена</button>
+    <div class="card" style="margin-top:10px">
+      <label class="label">Название салата</label>
+      <input value="${esc(draft.name)}" placeholder="Например: Цезарь" oninput="draft.name=this.value">
+
+      <label class="label">Продукты: граммы, сколько уходит в партию</label>
+      ${rows}
+      <button class="ghost small" style="margin-top:4px" onclick="addRow()">+ Продукт</button>
+
+      <label class="label">Вес готового салата, г (необязательно)</label>
+      <input inputmode="decimal" placeholder="Пусто = сумма продуктов" value="${esc(draft.finalWeight)}"
+        oninput="draft.finalWeight=this.value;updPreview()">
+      <div class="muted" style="margin-top:8px">
+        Сумма продуктов: <b id="sum">${fmt(rawSum(draft))}</b> г · выход: <b id="fw">${fmt(finalW(draft))}</b> г
+      </div>
+      <div class="muted" style="margin-top:4px">Заполните выход, если после готовки вес изменился (варка, запекание, отжим).</div>
+    </div>
+
+    <div class="card">
+      <div class="label" style="margin-top:0">Предпросмотр: на 100 г готового</div>
+      <div id="prev">${previewHTML(draft)}</div>
+    </div>
+
+    <button class="block" onclick="saveDraft()">Сохранить</button>`;
+}
+
+function addRow() {
+  draft.items.push({ name: '', grams: '' });
+  render();
+}
+
+function delRow(i) {
+  draft.items.splice(i, 1);
+  if (!draft.items.length) draft.items.push({ name: '', grams: '' });
+  render();
+}
+
+function saveDraft() {
+  const name = draft.name.trim();
+  const items = draft.items
+    .map(i => ({ name: i.name.trim(), grams: num(i.grams) }))
+    .filter(i => i.name && i.grams > 0);
+  if (!name) { alert('Введите название салата'); return; }
+  if (!items.length) { alert('Добавьте хотя бы один продукт с весом'); return; }
+
+  const fw = num(draft.finalWeight);
+  const rec = {
+    id: draft.id || newId(),
+    name,
+    finalWeight: fw > 0 ? fw : null,
+    items,
+    updated: Date.now()
+  };
+  const idx = recipes.findIndex(r => r.id === rec.id);
+  if (idx >= 0) recipes[idx] = rec; else recipes.push(rec);
+  save();
+  go('recipe', rec.id);
+}
+
+// ---------- резервная копия ----------
+function exportData() {
+  const json = JSON.stringify({ app: 'salad-book', version: 1, recipes }, null, 2);
+  if (window.AndroidApp) { AndroidApp.shareText(json); return; }
+  const blob = new Blob([json], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'salad-recipes-' + new Date().toISOString().slice(0, 10) + '.json';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+}
+
+function importText(text) {
+  try {
+    const data = JSON.parse(text);
+    const list = Array.isArray(data) ? data : data.recipes;
+    if (!Array.isArray(list)) throw new Error('bad format');
+    list.forEach(r => {
+      const i = recipes.findIndex(x => x.id === r.id);
+      if (i >= 0) recipes[i] = r; else recipes.push(r);
+    });
+    save();
+    go('list');
+    alert('Импортировано рецептов: ' + list.length);
+  } catch (e) {
+    alert('Не удалось прочитать резервную копию');
+  }
+}
+
+// В приложении (APK) импорт — вставкой текста копии, в браузере — выбором файла
+function importClick() {
+  if (window.AndroidApp) {
+    const t = prompt('Вставьте текст резервной копии (JSON):');
+    if (t) importText(t);
+    return;
+  }
+  document.getElementById('imp').click();
+}
+
+function importData(input) {
+  const f = input.files[0];
+  if (!f) return;
+  const reader = new FileReader();
+  reader.onload = () => importText(reader.result);
+  reader.readAsText(f);
+  input.value = '';
+}
+
+render();
+</script>
+</body>
+</html>
