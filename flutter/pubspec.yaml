@@ -1,0 +1,26 @@
+name: ladushki_salads
+description: Личная база салатов с расчётом продуктов на 100 г.
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.3.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  supabase_flutter: ^2.5.6
+  provider: ^6.1.2
+  shared_preferences: ^2.3.2
+  share_plus: ^10.0.0
+  file_picker: ^8.1.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/logo.jpg
