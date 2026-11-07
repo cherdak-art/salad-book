@@ -26,7 +26,7 @@ class _SeigaihaPainter extends CustomPainter {
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1
       ..color = Brand.amber.withValues(alpha: 0.07);
-    const r = 28.0;
+    const r = 40.0; // крупнее шаг — меньше дуг, быстрее отрисовка
     for (var row = 0; row * r * 0.5 < size.height + r; row++) {
       final shift = row.isOdd ? r / 2 : 0.0;
       for (var col = -1; col * r < size.width + r; col++) {

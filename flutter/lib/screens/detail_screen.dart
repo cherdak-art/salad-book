@@ -7,7 +7,6 @@ import '../routes.dart';
 import '../state/app_state.dart';
 import '../theme.dart';
 import '../widgets/animated_grams.dart';
-import '../widgets/dancing_skeleton.dart';
 import 'edit_screen.dart';
 
 class DetailScreen extends StatefulWidget {
@@ -197,8 +196,6 @@ class _IngredientsTable extends StatelessWidget {
           const Divider(color: Brand.surface2, height: 20),
           Row(
             children: [
-              const DancingSkeleton(size: 28),
-              const SizedBox(width: 8),
               const Expanded(
                 child: Text('Итого сырья', style: TextStyle(fontWeight: FontWeight.w700)),
               ),

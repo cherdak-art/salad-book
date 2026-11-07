@@ -36,7 +36,18 @@ class ListScreen extends StatelessWidget {
               SliverAppBar(
                 pinned: true,
                 backgroundColor: Brand.bg,
-                title: const Text('Ладушки салаты', style: TextStyle(fontWeight: FontWeight.w700)),
+                title: const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Image(
+                      image: AssetImage('assets/skeleton.gif'),
+                      height: 36,
+                      gaplessPlayback: true,
+                    ),
+                    SizedBox(width: 8),
+                    Text('Ладушки салаты', style: TextStyle(fontWeight: FontWeight.w700)),
+                  ],
+                ),
                 actions: [
                   PopupMenuButton<String>(
                     color: Brand.surface2,
@@ -82,13 +93,12 @@ class ListScreen extends StatelessWidget {
                     itemCount: items.length,
                     itemBuilder: (context, i) {
                       final salad = items[i];
-                      return StaggerIn(
-                        index: i,
-                        child: SaladTile(
-                          salad: salad,
-                          onTap: () => Navigator.of(context).push(fadeRoute(DetailScreen(id: salad.id))),
-                        ),
+                      final tile = SaladTile(
+                        salad: salad,
+                        onTap: () => Navigator.of(context).push(fadeRoute(DetailScreen(id: salad.id))),
                       );
+                      // анимация появления только для первых видимых плиток: на остальные не тратим ресурсы
+                      return i < 12 ? StaggerIn(index: i, child: tile) : tile;
                     },
                   ),
                 ),
