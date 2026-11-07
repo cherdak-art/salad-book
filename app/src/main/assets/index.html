@@ -4,13 +4,15 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#2e7d4f">
-<title>Мои салаты</title>
+<title>Ладушки салаты</title>
 <style>
 :root{--bg:#f5f6f2;--card:#fff;--ink:#222;--muted:#777;--accent:#2e7d4f;--danger:#c0392b;--line:#e2e4de}
 *{box-sizing:border-box}
 body{margin:0;font-family:system-ui,-apple-system,Roboto,sans-serif;background:var(--bg);color:var(--ink);font-size:16px;-webkit-text-size-adjust:100%}
 header{position:sticky;top:0;background:var(--accent);color:#fff;padding:14px 16px;z-index:5}
+.hrow{display:flex;justify-content:space-between;align-items:center;gap:8px}
 header h1{font-size:19px;margin:0}
+header button.ghost{color:#fff;border-color:#fff}
 main{padding:12px;max-width:640px;margin:0 auto;padding-bottom:40px}
 button{font:inherit;border:0;border-radius:10px;padding:11px 14px;background:var(--accent);color:#fff;cursor:pointer}
 button.ghost{background:transparent;color:var(--accent);border:1px solid var(--accent)}
@@ -21,10 +23,14 @@ input{font:inherit;width:100%;padding:10px;border:1px solid var(--line);border-r
 .card{background:var(--card);border-radius:12px;padding:14px;margin-bottom:10px;box-shadow:0 1px 2px rgba(0,0,0,.05)}
 .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .muted{color:var(--muted);font-size:14px}
+.error{color:var(--danger);font-size:14px;margin-top:8px}
 .title{font-weight:600;font-size:17px}
 .big{font-size:20px}
 .label{display:block;font-size:14px;color:var(--muted);margin:14px 0 6px}
-.recipe-item{cursor:pointer}
+.hidden{display:none !important}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.tile{background:var(--card);border-radius:12px;padding:12px;min-height:96px;display:flex;align-items:center;justify-content:center;text-align:center;box-shadow:0 1px 2px rgba(0,0,0,.06);border-top:4px solid var(--accent);cursor:pointer;word-break:break-word}
+.tile .title{font-size:15px;line-height:1.3;font-weight:600}
 .portion-input{width:100px}
 .ing-row{display:grid;grid-template-columns:1fr 100px 40px;gap:6px;margin-bottom:6px}
 table{width:100%;border-collapse:collapse}
@@ -35,21 +41,74 @@ tr.total td{font-weight:600;border-bottom:0}
 </style>
 </head>
 <body>
-<header><h1>🥗 Мои салаты</h1></header>
-<main id="app"></main>
+<header>
+  <div class="hrow">
+    <h1>🥗 Ладушки салаты</h1>
+    <button id="logout" class="ghost small hidden" onclick="signOut()">Выйти</button>
+  </div>
+</header>
+<main id="app"><p class="muted">Загрузка…</p></main>
 <input type="file" id="imp" accept="application/json,.json" hidden onchange="importData(this)">
 
+<script src="supabase.js"></script>
 <script>
-const KEY = 'salad-recipes-v1';
-let recipes = [];
-try { recipes = JSON.parse(localStorage.getItem(KEY) || '[]'); } catch (e) { recipes = []; }
-let view = { name: 'list', id: null };
+// ---------- подключение к Supabase ----------
+const SUPABASE_URL = 'https://pmsmgyefkrbwprppeqem.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_q43-hejSOKt3F5PRzNaCzQ_hS0EgB1S';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+const OLD_KEY = 'salad-recipes-v1';   // старые данные из localStorage (до Supabase)
+
+// стартовый список салатов из меню (только названия)
+const SEED_NAMES = [
+  `Салат "Солнышко"`, `Салат "Зимушка"`, `Салат "Фасолевый" с помидором`, `Салат "Свёкла с черносливом"`,
+  `Салат "Огурчики малосольные"`, `Салат "Фунчоза" с опятами`, `Капуста квашеная с брусникой`,
+  `Салат с пекинской капустой и`, `Салат с морской капустой и опятами`, `Салат с капустой, свёклой и яблоком`,
+  `Салат "Витаминный" с опятами`, `Салат со свёклой и пекинской капустой`, `Салат "Колхозный"`,
+  `Салат "Помидоры с сыром"`, `Салат "Винегрет"`, `Салат "Витаминный" с ананасом`, `Салат "Витаминный"`,
+  `Салат "Застольный"`, `Салат "Воздушный"`, `Салат «Обожаемый»`, `Салат «Болгарский» (с`,
+  `Салат «Болгарский» (пере`, `Салат «Экзотический»`, `Салат «Цыпочка»`, `Салат с курицей и овощами`,
+  `Салат "Август" (курица,`, `Шеф-салат`, `Салат "Дворянский"`, `Салат "Гнездо глухаря"`,
+  `Салат "Танго" с курочкой`, `Салат "Гавайский"`, `Салат "Восточный"`, `Салат "Столичный"`, `Салат "Какаду"`,
+  `Салат "Баварский"`, `Салат "Венеция"`, `Салат с ветчиной и шампиньонами`, `Салат "Оливье"`,
+  `Салат с морской капустой и колбасой`, `Салат "Флоренция"`, `Салат "Новый"`, `Салат с ветчиной и фасолью`,
+  `Салат "Бриз"`, `Салат "Карнавал"`, `Салат "Идеальный"`, `Салат с ветчиной и пекинской капустой`,
+  `Салат "Урожай" (свежий)`, `Салат "Свекольный"`, `Салат «Грибной по-корейски»`,
+  `Салат из морской капусты и овощей`, `Салат "Витаминный" с брусникой`, `Салат "Весенний"`,
+  `Салат «Капуста по-корейски»`, `Капуста по-пекински`, `Салат "Фасолька"`,
+  `Салат "Морковь по-корейски" с морской капустой`, `Рулетики из баклажана с сыром`,
+  `Салат «Летний» (с дайконом)`, `Салат «Огурчики по-корейски»`, `Салат "Свежий"`, `Овощной с фетаксой`,
+  `Помидоры с лучком`, `Горлодёр`, `Салат "Свёкла с грецким орехом"`, `Салат "Фунчоза по-корейски с`,
+  `Со стручковой фасолью и`, `Салат "Снежный"`, `Салат «Дайкон по-корейски»`, `Салат «Лесной» с папоротником`,
+  `Салат «Коул Слоу»`, `Салат "Невеста"`, `Салат "Фунчоза с курицей"`, `Салат "Цезарь" (с курицей)`,
+  `Салат «Дамский каприз» (курица,`, `Салат "Сюрприз"`, `Салат "Маскарад"`, `Салат "Мимоза"`,
+  `Салат "Селедочка с лучком"`, `Салат "Крабовый"`, `Салат "Континент"`, `Салат "Огонек"`,
+  `Салат "Оливье" с сёмгой`, `Салат «Новинка» с кальмаром`, `Салат «Кальмары по-корейски»`, `Салат "Идеал"`,
+  `"Оливье" с красной рыбкой`, `Салат "Фантазия" (с крабовыми)`, `Форель авторского посола с луком`,
+  `Селедка "Закусочная" (филе`, `Салат с морской капустой, огурцом, кр`, `Салат "Фунчоза с овощами по-корейски"`,
+  `Салат "Таёжный" с папоротником`, `Салат "Свёкла с яблоком и сыром"`, `Салат "Греческий"`,
+  `Салат "Овощной"`, `Закуска с яйцом`, `Салат "Корейский" с цв. капустой`, `Салат "Морковь по-корейски"`,
+  `Салат "Спаржа по-корейски"`, `Салат "Морковь по-корейски" с`, `Салат "Свежесть"`, `Салатик по-деревенски`,
+  `Салат "Свёкла с сыром"`, `Салат "Дайкон"`, `Салат из пекинской капусты с`, `Салат «2 мяса»`,
+  `Салат "Сюрприз" (со свининкой)`, `Салат «Кавказский» (с`, `Салат «Красное море»`, `Салат «Мореходка»`,
+  `Салат "Морской" с кальмаром`, `Салат "Маринад" с сайрой`, `Салат "Морской конёк"`,
+  `Салат «Селедка под шубой»`, `Салат «Калейдоскоп»`, `Салат "Берлинский" с ветчиной`, `Салат "На скорую руку"`,
+  `Салат "Обжорка" с п/к колбасой`, `Салат "Нежный"`, `Салат "Столичный" с колб.`, `Салат "Хрустик"`,
+  `Салат "Мужской каприз"`, `Салат "Ангарский"`, `Салат "Закусочный"`, `Салат "Леди"`, `Салат "Уралочка"`,
+  `Салат "Польский" (с языком)`, `Салат с языком и яичными`, `Салат "Желудочки с овощами по-корейски"`,
+  `Салат "Обжорка" с печенью`, `Салат «Король Артур» с языком`, `Салат «Желудочки по-корейски»`,
+  `Салат "Обжорка" с говядиной`, `Салат "Тбилиси" (с говядиной)`
+];
+
+let recipes = [];           // салаты в формате приложения: {id, name, finalWeight, items:[{name,grams}]}
+let role = 'cook';          // 'admin' или 'cook'
+let view = { name: 'login', id: null };
 let draft = null;
 let search = '';
 let portions = 10;
+let loginError = '';
 
-function save() { localStorage.setItem(KEY, JSON.stringify(recipes)); }
-function newId() { return 'r' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
+// ---------- общие функции ----------
 function esc(s) {
   return String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 }
@@ -62,12 +121,130 @@ function fmt(x) {
   if (x >= 10) return String(Math.round(x));
   return String(Math.round(x * 10) / 10).replace('.', ',');
 }
+function capFirst(s) {
+  s = String(s ?? '').trim();
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}
 
 // ---------- расчёты ----------
 function rawSum(r) { return r.items.reduce((s, i) => s + num(i.grams), 0); }
 function finalW(r) { const f = num(r.finalWeight); return f > 0 ? f : rawSum(r); }
 // сколько грамм продукта уходит на 100 г готового салата
 function per100(r, grams) { const w = finalW(r); return w > 0 ? num(grams) / w * 100 : 0; }
+
+// ---------- работа с базой Supabase ----------
+function fromDb(row) {
+  return {
+    id: row.id,
+    name: row.name,
+    finalWeight: row.final_weight ? Number(row.final_weight) : null,
+    items: (row.ingredients || [])
+      .slice()
+      .sort((a, b) => a.position - b.position)
+      .map(i => ({ name: i.name, grams: Number(i.grams) }))
+  };
+}
+
+async function loadRecipes() {
+  const { data, error } = await sb.from('salads')
+    .select('id,name,final_weight,ingredients(name,grams,position)')
+    .order('name');
+  if (error) throw error;
+  recipes = data.map(fromDb);
+}
+
+async function loadRole() {
+  const { data: u } = await sb.auth.getUser();
+  const { data: p } = await sb.from('profiles').select('role').eq('id', u.user.id).single();
+  role = p ? p.role : 'cook';
+}
+
+// создать или обновить салат вместе с составом; возвращает id
+async function saveRecipe(rec) {
+  let id = rec.id;
+  const row = { name: rec.name, final_weight: rec.finalWeight || null, updated_at: new Date().toISOString() };
+  if (id) {
+    const { error } = await sb.from('salads').update(row).eq('id', id);
+    if (error) throw error;
+    const { error: delErr } = await sb.from('ingredients').delete().eq('salad_id', id);
+    if (delErr) throw delErr;
+  } else {
+    const { data, error } = await sb.from('salads').insert(row).select('id').single();
+    if (error) throw error;
+    id = data.id;
+  }
+  if (rec.items.length) {
+    const rows = rec.items.map((i, idx) => ({ salad_id: id, name: i.name, grams: i.grams, position: idx }));
+    const { error } = await sb.from('ingredients').insert(rows);
+    if (error) throw error;
+  }
+  return id;
+}
+
+// удалить салат; RLS разрешает только администратору, поэтому проверяем, что строка реально удалена
+async function deleteSalad(id) {
+  const { data, error } = await sb.from('salads').delete().eq('id', id).select('id');
+  if (error) throw error;
+  if (!data || !data.length) throw new Error('Удалять может только администратор');
+}
+
+// перенос старых данных из браузера/телефона (один раз)
+async function migrateOldData() {
+  if (localStorage.getItem('migrated-v1')) return;
+  let old = [];
+  try { old = JSON.parse(localStorage.getItem(OLD_KEY) || '[]'); } catch (e) { old = []; }
+  if (!Array.isArray(old) || !old.length) { localStorage.setItem('migrated-v1', '1'); return; }
+  const names = new Set(recipes.map(r => r.name.toLowerCase()));
+  for (const r of old) {
+    if (!r.name || names.has(r.name.toLowerCase())) continue;
+    names.add(r.name.toLowerCase());
+    await saveRecipe({ id: null, name: capFirst(r.name), finalWeight: r.finalWeight || null, items: r.items || [] });
+  }
+  localStorage.setItem('migrated-v1', '1');
+}
+
+// стартовые названия (только если база пуста, один раз на устройство)
+async function seedNames() {
+  if (localStorage.getItem('seeded-db-v1') || recipes.length) return;
+  const rows = SEED_NAMES.map(n => ({ name: capFirst(n), updated_at: new Date().toISOString() }));
+  const { error } = await sb.from('salads').insert(rows);
+  if (error) throw error;
+  localStorage.setItem('seeded-db-v1', '1');
+}
+
+// ---------- вход и выход ----------
+async function startApp() {
+  try {
+    await loadRole();
+    await loadRecipes();
+    await migrateOldData();
+    await seedNames();
+    await loadRecipes();
+    view = { name: 'list', id: null };
+  } catch (e) {
+    alert('Не удалось загрузить данные: ' + (e.message || e));
+  }
+  document.getElementById('logout').classList.remove('hidden');
+  render();
+}
+
+async function signIn() {
+  const email = document.getElementById('em').value.trim();
+  const password = document.getElementById('pw').value;
+  const { error } = await sb.auth.signInWithPassword({ email, password });
+  if (error) { loginError = 'Неверный email или пароль'; render(); return; }
+  loginError = '';
+  await startApp();
+}
+
+async function signOut() {
+  await sb.auth.signOut();
+  recipes = [];
+  role = 'cook';
+  view = { name: 'login', id: null };
+  document.getElementById('logout').classList.add('hidden');
+  render();
+}
 
 // ---------- навигация ----------
 function go(name, id) {
@@ -79,7 +256,7 @@ function go(name, id) {
         id: r.id,
         name: r.name,
         finalWeight: r.finalWeight ? String(r.finalWeight) : '',
-        items: r.items.map(i => ({ name: i.name, grams: String(i.grams) }))
+        items: r.items.length ? r.items.map(i => ({ name: i.name, grams: String(i.grams) })) : [{ name: '', grams: '' }]
       };
     } else {
       draft = { id: null, name: '', finalWeight: '', items: [{ name: '', grams: '' }] };
@@ -91,9 +268,25 @@ function go(name, id) {
 
 function render() {
   const app = document.getElementById('app');
-  if (view.name === 'list') app.innerHTML = listHTML();
+  if (view.name === 'login') app.innerHTML = loginHTML();
+  else if (view.name === 'list') app.innerHTML = listHTML();
   else if (view.name === 'recipe') app.innerHTML = recipeHTML(view.id);
   else app.innerHTML = editHTML();
+}
+
+// ---------- вход ----------
+function loginHTML() {
+  return `
+    <div class="card" style="margin-top:20px">
+      <div class="big" style="margin-bottom:6px">Вход</div>
+      <div class="muted" style="margin-bottom:10px">Введите email и пароль, которые выдал администратор.</div>
+      <label class="label">Email</label>
+      <input id="em" type="email" autocomplete="username">
+      <label class="label">Пароль</label>
+      <input id="pw" type="password" autocomplete="current-password">
+      ${loginError ? `<div class="error">${esc(loginError)}</div>` : ''}
+      <button class="block" style="margin-top:14px" onclick="signIn()">Войти</button>
+    </div>`;
 }
 
 // ---------- список ----------
@@ -108,9 +301,8 @@ function itemsHTML(list) {
   if (!recipes.length) return '<p class="muted">Пока нет ни одного салата. Нажмите «+ Новый салат».</p>';
   if (!list.length) return '<p class="muted">Ничего не найдено.</p>';
   return list.map(r => `
-    <div class="card recipe-item" onclick="go('recipe','${r.id}')">
+    <div class="tile" onclick="go('recipe','${r.id}')">
       <div class="title">${esc(r.name)}</div>
-      <div class="muted">${r.items.length} прод. · выход ${fmt(finalW(r))} г</div>
     </div>`).join('');
 }
 
@@ -121,9 +313,9 @@ function listHTML() {
         oninput="search=this.value;document.getElementById('items').innerHTML=itemsHTML(filteredList())">
     </div>
     <button class="block" onclick="go('edit')">+ Новый салат</button>
-    <div id="items" style="margin-top:12px">${itemsHTML(filteredList())}</div>
+    <div id="items" class="grid" style="margin-top:12px">${itemsHTML(filteredList())}</div>
     <div class="card" style="margin-top:18px">
-      <div class="muted" style="margin-bottom:10px">Данные хранятся в этом браузере. Делайте резервную копию: экспорт сохранит файл, импорт вернёт рецепты обратно.</div>
+      <div class="muted" style="margin-bottom:10px">Данные хранятся в базе Supabase. Резервная копия: экспорт сохранит файл, импорт вернёт рецепты обратно.</div>
       <div class="row">
         <button class="ghost" onclick="exportData()">Экспорт</button>
         <button class="ghost" onclick="importClick()">Импорт</button>
@@ -180,7 +372,7 @@ function recipeHTML(id) {
 
     <div class="row" style="margin-top:6px">
       <button class="ghost" onclick="go('edit','${r.id}')">Изменить</button>
-      <button class="danger" onclick="deleteRecipe('${r.id}')">Удалить</button>
+      ${role === 'admin' ? `<button class="danger" onclick="deleteRecipe('${r.id}')">Удалить</button>` : ''}
     </div>`;
 }
 
@@ -193,12 +385,16 @@ function setPortions(v) {
   });
 }
 
-function deleteRecipe(id) {
+async function deleteRecipe(id) {
   const r = recipes.find(x => x.id === id);
   if (!r || !confirm(`Удалить «${r.name}»?`)) return;
-  recipes = recipes.filter(x => x.id !== id);
-  save();
-  go('list');
+  try {
+    await deleteSalad(id);
+    await loadRecipes();
+    go('list');
+  } catch (e) {
+    alert(e.message || 'Не удалось удалить');
+  }
 }
 
 // ---------- редактирование ----------
@@ -263,7 +459,7 @@ function delRow(i) {
   render();
 }
 
-function saveDraft() {
+async function saveDraft() {
   const name = draft.name.trim();
   const items = draft.items
     .map(i => ({ name: i.name.trim(), grams: num(i.grams) }))
@@ -272,22 +468,18 @@ function saveDraft() {
   if (!items.length) { alert('Добавьте хотя бы один продукт с весом'); return; }
 
   const fw = num(draft.finalWeight);
-  const rec = {
-    id: draft.id || newId(),
-    name,
-    finalWeight: fw > 0 ? fw : null,
-    items,
-    updated: Date.now()
-  };
-  const idx = recipes.findIndex(r => r.id === rec.id);
-  if (idx >= 0) recipes[idx] = rec; else recipes.push(rec);
-  save();
-  go('recipe', rec.id);
+  try {
+    const id = await saveRecipe({ id: draft.id, name, finalWeight: fw > 0 ? fw : null, items });
+    await loadRecipes();
+    go('recipe', id);
+  } catch (e) {
+    alert('Не удалось сохранить: ' + (e.message || e));
+  }
 }
 
 // ---------- резервная копия ----------
 function exportData() {
-  const json = JSON.stringify({ app: 'salad-book', version: 1, recipes }, null, 2);
+  const json = JSON.stringify({ app: 'salad-book', version: 2, recipes }, null, 2);
   if (window.AndroidApp) { AndroidApp.shareText(json); return; }
   const blob = new Blob([json], { type: 'application/json' });
   const a = document.createElement('a');
@@ -298,16 +490,21 @@ function exportData() {
   a.remove();
 }
 
-function importText(text) {
+async function importText(text) {
   try {
     const data = JSON.parse(text);
     const list = Array.isArray(data) ? data : data.recipes;
     if (!Array.isArray(list)) throw new Error('bad format');
-    list.forEach(r => {
-      const i = recipes.findIndex(x => x.id === r.id);
-      if (i >= 0) recipes[i] = r; else recipes.push(r);
-    });
-    save();
+    for (const r of list) {
+      const existing = recipes.find(x => x.name.toLowerCase() === String(r.name || '').toLowerCase());
+      await saveRecipe({
+        id: existing ? existing.id : null,
+        name: capFirst(r.name),
+        finalWeight: r.finalWeight || null,
+        items: (r.items || []).map(i => ({ name: i.name, grams: num(i.grams) })).filter(i => i.name && i.grams > 0)
+      });
+    }
+    await loadRecipes();
     go('list');
     alert('Импортировано рецептов: ' + list.length);
   } catch (e) {
@@ -334,7 +531,12 @@ function importData(input) {
   input.value = '';
 }
 
-render();
+// ---------- запуск ----------
+(async () => {
+  const { data: { session } } = await sb.auth.getSession();
+  if (session) await startApp();
+  else render();
+})();
 </script>
 </body>
 </html>
