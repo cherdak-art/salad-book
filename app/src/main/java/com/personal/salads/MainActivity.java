@@ -9,15 +9,14 @@ import android.webkit.JsPromptResult;
 import android.webkit.JsResult;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebChromeClient;
-import android.webkit.WebResourceRequest;
-import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.EditText;
 
-import androidx.webkit.WebViewAssetLoader;
-
 public class MainActivity extends Activity {
+
+    // Адрес веб-версии приложения (GitHub Pages из папки docs репозитория)
+    private static final String APP_URL = "https://cherdak-art.github.io/salad-book/";
 
     private WebView webView;
 
@@ -46,23 +45,13 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // index.html лежит в app/src/main/assets и открывается с безопасного адреса,
-        // поэтому localStorage работает стабильно
-        WebViewAssetLoader loader = new WebViewAssetLoader.Builder()
-                .addPathHandler("/assets/", new WebViewAssetLoader.AssetsPathHandler(this))
-                .build();
-
+        // Страница грузится из интернета (GitHub Pages): обновления видны без переустановки APK
         webView = new WebView(this);
         webView.getSettings().setJavaScriptEnabled(true);
         webView.getSettings().setDomStorageEnabled(true);
         webView.addJavascriptInterface(new AndroidBridge(this), "AndroidApp");
 
-        webView.setWebViewClient(new WebViewClient() {
-            @Override
-            public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
-                return loader.shouldInterceptRequest(request.getUrl());
-            }
-        });
+        webView.setWebViewClient(new WebViewClient());
 
         // alert / confirm / prompt из JavaScript без этого не отображаются
         webView.setWebChromeClient(new WebChromeClient() {
@@ -105,7 +94,7 @@ public class MainActivity extends Activity {
         });
 
         setContentView(webView);
-        webView.loadUrl("https://appassets.androidplatform.net/assets/index.html");
+        webView.loadUrl(APP_URL);
     }
 
     @Override
