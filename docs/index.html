@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#8B5A2B">
 <title>Ладушки салаты</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap">
 <style>
 /* Композиция: одна колонка, шапка с танцующим скелетом, плитки-сетка, экраны салата и редактирования */
 :root{
@@ -25,7 +28,7 @@ html{-webkit-text-size-adjust:100%}
 body{
   margin:0; min-height:100vh; color:var(--fg);
   background:var(--bg);
-  font:15px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font:15px/1.45 "Manrope", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   padding:env(safe-area-inset-top,0px) max(16px, env(safe-area-inset-right,0px)) env(safe-area-inset-bottom,0px) max(16px, env(safe-area-inset-left,0px));
   box-sizing:border-box;
 }
@@ -36,7 +39,7 @@ section{animation:fade .35s ease both}
 @media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
 
 .top{position:sticky; top:0; z-index:5; display:flex; align-items:center; gap:10px; padding:14px 0 10px; background:var(--bg)}
-h1{font:700 22px/1.2 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; margin:0}
+h1{font:700 22px/1.2 "Manrope", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; margin:0}
 .hdr-actions{margin-left:auto; display:flex; gap:6px}
 .bar{display:flex; gap:10px; align-items:center; margin:6px 0 10px}
 .bar input{flex:1}
@@ -53,22 +56,24 @@ input:focus, textarea:focus{outline:2px solid var(--gold); outline-offset:1px}
   position:relative; width:100%; min-height:96px; box-sizing:border-box; padding:12px;
   display:flex; align-items:center; justify-content:center; text-align:center;
   border-radius:18px; border:1px solid var(--line); cursor:pointer; color:var(--fg);
-  font:600 15px/1.25 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font:600 15px/1.25 "Manrope", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   background:var(--surface2); transition:transform .12s ease;
 }
 .tile{content-visibility:auto; contain-intrinsic-size:auto 96px}
 .tile:active{transform:scale(.94)}
+/* рецепт без состава: бледнее, без надписей */
+.tile.empty{background:transparent; color:var(--muted); border-style:dashed}
 .tile-name{display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; overflow-wrap:anywhere}
 .enter{animation:rise .45s cubic-bezier(.2,.7,.2,1) both; animation-delay:calc(var(--i,0) * 35ms)}
 
 .fab{
   position:fixed; right:max(16px, env(safe-area-inset-right,0px)); bottom:max(18px, env(safe-area-inset-bottom,0px));
   border:0; border-radius:16px; padding:14px 18px; background:var(--gold); color:var(--on-accent);
-  font:700 15px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; cursor:pointer;
+  font:700 15px "Manrope", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; cursor:pointer;
 }
 .btn{
   padding:12px 16px; border-radius:14px; border:1px solid var(--line); background:transparent; color:var(--fg);
-  font:600 15px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; cursor:pointer;
+  font:600 15px "Manrope", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; cursor:pointer;
 }
 .btn.small{padding:8px 12px; font-size:13px}
 .btn.primary{background:var(--gold); color:var(--on-accent); border-color:transparent}
@@ -78,20 +83,23 @@ input:focus, textarea:focus{outline:2px solid var(--gold); outline-offset:1px}
 .actions .btn{flex:1 1 140px}
 
 .card{background:var(--surface); border:1px solid var(--line); border-radius:18px; padding:16px; margin-bottom:14px; min-width:0}
-.dtitle{font:700 22px/1.25 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; margin:10px 0 12px; overflow-wrap:anywhere}
+.dtitle{font:700 22px/1.25 "Manrope", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; margin:10px 0 12px; overflow-wrap:anywhere}
 .porrow{display:flex; align-items:center; gap:8px; flex-wrap:wrap}
 .porrow input{width:110px; text-align:center}
 
-.row{display:grid; grid-template-columns:1fr 84px 124px; gap:8px; align-items:center; padding:7px 0; border-bottom:1px dashed var(--line)}
-.row.hd{color:var(--muted); font-size:13px; border-bottom:1px solid var(--line)}
+.row{display:grid; grid-template-columns:minmax(0,1fr) 64px 84px; gap:10px; align-items:center; padding:9px 0; border-bottom:1px dashed var(--line)}
+.row.hd{color:var(--muted); font-size:12px; font-weight:600; border-bottom:1px solid var(--line); white-space:nowrap}
 .row.total{font-weight:700; border-bottom:0; padding-top:10px}
-.row .nm{overflow-wrap:anywhere; min-width:0}
-.g{text-align:right; font-variant-numeric:tabular-nums}
-.kg{color:var(--gold); font-weight:700; text-align:right; font-variant-numeric:tabular-nums}
+.row .nm{min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-weight:500}
+.row.full .nm{white-space:normal; overflow-wrap:anywhere}
+.row:not(.hd):not(.total){cursor:pointer}
+.g{text-align:right; font-variant-numeric:tabular-nums; white-space:nowrap}
+.kg{color:var(--gold); font-weight:700; text-align:right; font-variant-numeric:tabular-nums; white-space:nowrap}
 .row2{display:flex; justify-content:space-between; gap:10px; padding:6px 0; border-bottom:1px dashed var(--line)}
-.row2 span:first-child{overflow-wrap:anywhere; min-width:0}
+.row2 span:first-child{min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.row2 span:last-child{white-space:nowrap}
 .eye{color:var(--muted); justify-self:end; display:block}
-.sub2{font:600 14px/1.3 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; color:var(--muted); margin:4px 0 6px}
+.sub2{font:600 14px/1.3 "Manrope", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; color:var(--muted); margin:4px 0 6px}
 .prose{white-space:pre-wrap; margin:0 0 12px; overflow-wrap:anywhere}
 
 .lbl{display:block; margin:12px 0 6px; color:var(--muted); font-size:14px}
@@ -106,7 +114,7 @@ input:focus, textarea:focus{outline:2px solid var(--gold); outline-offset:1px}
 .filter-btn{white-space:nowrap; padding:12px 14px}
 .filter-btn.on{background:var(--gold); color:var(--on-accent); border-color:transparent}
 .chips{display:flex; gap:8px; flex-wrap:wrap; margin:0 0 10px}
-.chip{padding:8px 14px; border-radius:999px; border:1px solid var(--line); background:var(--surface); color:var(--fg); font:600 14px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; cursor:pointer}
+.chip{padding:8px 14px; border-radius:999px; border:1px solid var(--line); background:var(--surface); color:var(--fg); font:600 14px "Manrope", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; cursor:pointer}
 .chip.on{background:var(--gold); color:var(--on-accent); border-color:transparent}
 .tags{display:flex; gap:6px; flex-wrap:wrap; margin:-4px 0 12px}
 .tags:empty{display:none}
@@ -140,13 +148,14 @@ input:focus, textarea:focus{outline:2px solid var(--gold); outline-offset:1px}
     </div>
   </header>
   <div class="bar">
-    <input id="search" type="search" placeholder="Поиск салата" autocomplete="off">
+    <input id="search" type="search" placeholder="Салат или продукт" autocomplete="off">
     <button id="filter-btn" class="btn filter-btn" aria-expanded="false">Фильтр</button>
   </div>
   <div id="filter-row" class="chips" hidden>
     <button class="chip" data-tag="">Все</button>
     <button class="chip" data-tag="майонезный">Майонезный</button>
     <button class="chip" data-tag="овощной">Овощной</button>
+    <button class="chip" data-tag="на доставку">На доставку</button>
   </div>
   <div id="count" class="muted" style="font-size:13px; margin-bottom:8px"></div>
   <p id="status" class="status" hidden></p>
@@ -184,6 +193,7 @@ input:focus, textarea:focus{outline:2px solid var(--gold); outline-offset:1px}
     <div id="e-tags" class="chips">
       <button class="chip" data-tag="майонезный">Майонезный</button>
       <button class="chip" data-tag="овощной">Овощной</button>
+      <button class="chip" data-tag="на доставку">На доставку</button>
     </div>
     <p class="lbl" style="margin-bottom:8px">Продукты: граммы на партию <span style="font-size:12px">(без граммов — значок глаза, «на глаз»)</span></p>
     <div id="e-rows"></div>
@@ -261,8 +271,8 @@ const CAN_DELETE = ['admin', 'manager', 'cook'];   // «пользователь
 let loggedIn = false;
 let extraColumns = true;   // false, если миграция 002 ещё не выполнена
 let hasTags = true;        // false, если миграция 004 (теги) ещё не выполнена
-let tagFilter = '';
-const TAG_LABEL = { 'майонезный': 'Майонезный', 'овощной': 'Овощной' };
+let tagFilter = [];   // выбранные теги фильтра: салат должен иметь все
+const TAG_LABEL = { 'майонезный': 'Майонезный', 'овощной': 'Овощной', 'на доставку': 'На доставку' };
 let current = null;
 let editing = null;
 let portions = 10;
@@ -396,13 +406,18 @@ async function signOut() {
 // ---------- список ----------
 function renderList() {
   const q = $('#search').value.trim().toLowerCase();
-  const items = salads.filter((s) => (!q || s.name.toLowerCase().includes(q)) && (!tagFilter || s.tags.includes(tagFilter)));
-  $('#filter-btn').textContent = tagFilter ? TAG_LABEL[tagFilter] : 'Фильтр';
-  $('#filter-btn').classList.toggle('on', !!tagFilter);
-  for (const c of document.querySelectorAll('#filter-row .chip')) c.classList.toggle('on', c.dataset.tag === tagFilter);
+  // поиск по названию салата и по продуктам в составе
+  const matches = (s) => !q || s.name.toLowerCase().includes(q) || s.items.some((i) => String(i.name).toLowerCase().includes(q));
+  const items = salads.filter((s) => matches(s) && tagFilter.every((t) => s.tags.includes(t)));
+  $('#filter-btn').textContent = tagFilter.length === 1 ? TAG_LABEL[tagFilter[0]]
+    : tagFilter.length ? 'Фильтр · ' + tagFilter.length : 'Фильтр';
+  $('#filter-btn').classList.toggle('on', tagFilter.length > 0);
+  for (const c of document.querySelectorAll('#filter-row .chip')) {
+    c.classList.toggle('on', c.dataset.tag ? tagFilter.includes(c.dataset.tag) : !tagFilter.length);
+  }
   $('#count').textContent = salads.length ? `${items.length} из ${salads.length}` : '';
   $('#grid').innerHTML = items.map((s, i) =>
-    `<button class="tile ${i < 12 ? 'enter' : ''}" style="--i:${i}" data-id="${esc(s.id)}"><span class="tile-name">${esc(s.name)}</span></button>`
+    `<button class="tile${i < 12 ? ' enter' : ''}${s.items.length ? '' : ' empty'}" style="--i:${i}" data-id="${esc(s.id)}"><span class="tile-name">${esc(s.name)}</span></button>`
   ).join('');
   $('#empty').hidden = salads.length > 0;
 }
@@ -426,7 +441,7 @@ function renderDetail() {
       return `<div class="row"><span class="nm">${esc(i.name)}</span><span class="g">${fmtGrams(g)} г</span><span class="kg">${fmtKg(g * portions)} кг</span></div>`;
     }).join('');
     $('#d-table').innerHTML =
-      `<div class="row hd"><span>Продукт</span><span class="g">на 100 г</span><span class="g">для ${portions} порц., кг</span></div>` +
+      `<div class="row hd"><span>Продукт</span><span class="g">на 100 г</span><span class="g">${portions} порц.</span></div>` +
       rows +
       `<div class="row total"><span>Итого сырья</span><span class="g">${fmtGrams(total)} г</span><span class="kg">${fmtKg(total * portions)} кг</span></div>`;
   }
@@ -560,6 +575,10 @@ $('#add').addEventListener('click', () => openEdit(null));
 $('#d-back').addEventListener('click', () => { show('list'); renderList(); });
 $('#d-edit').addEventListener('click', () => openEdit(current));
 $('#d-del').addEventListener('click', deleteCurrent);
+$('#d-table').addEventListener('click', (e) => {
+  const r = e.target.closest('.row');
+  if (r && !r.classList.contains('hd') && !r.classList.contains('total')) r.classList.toggle('full');
+});
 $('#portions').addEventListener('input', (e) => {
   portions = Math.max(1, parseInt(e.target.value, 10) || 1);
   renderDetail();
@@ -594,7 +613,9 @@ $('#filter-btn').addEventListener('click', () => {
 $('#filter-row').addEventListener('click', (e) => {
   const c = e.target.closest('.chip');
   if (!c) return;
-  tagFilter = c.dataset.tag;
+  const t = c.dataset.tag;
+  if (!t) tagFilter = [];   // «Все» сбрасывает фильтр
+  else tagFilter = tagFilter.includes(t) ? tagFilter.filter((x) => x !== t) : [...tagFilter, t];
   renderList();
 });
 $('#e-tags').addEventListener('click', (e) => {
