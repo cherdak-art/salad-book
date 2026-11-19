@@ -3,30 +3,29 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#14110F">
+<meta name="theme-color" content="#8B5A2B">
 <title>Ладушки салаты</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@600;700&family=Noto+Sans+JP:wght@400;600&display=swap">
 <style>
 /* Композиция: одна колонка, шапка с танцующим скелетом, плитки-сетка, экраны салата и редактирования */
 :root{
   color-scheme: light;
-  --bg:#F4EDE1; --fg:#2B211B; --surface:#FBF7EF; --surface2:#EDE2D0;
-  --brand:#8B5A2B; --indigo:#2E4057; --gold:#B8862B; --vermilion:#C4432C;
+  --bg:#F4EFE9; --fg:#2B211B; --surface:#FFFDFA; --surface2:#EDE4DA;
+  --brand:#8B5A2B; --gold:#8B5A2B; --vermilion:#B3452C; --on-accent:#FFFFFF;
   --muted:#7E6C5E; --line:rgba(139,90,43,.28);
 }
 @media (prefers-color-scheme: dark){
   :root{
     color-scheme: dark;
     --bg:#14110F; --fg:#F3ECE0; --surface:#1F1A17; --surface2:#2B231E;
-    --brand:#8B5A2B; --indigo:#2E4057; --gold:#E0B25B; --vermilion:#D6452E;
+    --brand:#8B5A2B; --gold:#D9A066; --vermilion:#E0614A; --on-accent:#1A1410;
     --muted:#A8978A; --line:rgba(224,178,91,.3);
   }
 }
 html{-webkit-text-size-adjust:100%}
 body{
   margin:0; min-height:100vh; color:var(--fg);
-  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='44' height='22'%3E%3Cpath d='M0 22A22 22 0 0 1 44 22M10 22A12 12 0 0 1 34 22' fill='none' stroke='%23B8862B' stroke-opacity='.14'/%3E%3C/svg%3E") 0 0/44px 22px, var(--bg);
-  font:15px/1.45 "Noto Sans JP", system-ui, -apple-system, sans-serif;
+  background:var(--bg);
+  font:15px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   padding:env(safe-area-inset-top,0px) max(16px, env(safe-area-inset-right,0px)) env(safe-area-inset-bottom,0px) max(16px, env(safe-area-inset-left,0px));
   box-sizing:border-box;
 }
@@ -37,9 +36,7 @@ section{animation:fade .35s ease both}
 @media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
 
 .top{position:sticky; top:0; z-index:5; display:flex; align-items:center; gap:10px; padding:14px 0 10px; background:var(--bg)}
-.dance{height:44px; width:auto; border-radius:10px}
-h1{font:700 22px/1.2 "Noto Serif JP", serif; margin:0}
-.sub{color:var(--muted); letter-spacing:.25em; font-size:12px}
+h1{font:700 22px/1.2 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; margin:0}
 .hdr-actions{margin-left:auto; display:flex; gap:6px}
 .bar{display:flex; gap:10px; align-items:center; margin:6px 0 10px}
 .bar input{flex:1}
@@ -56,33 +53,32 @@ input:focus, textarea:focus{outline:2px solid var(--gold); outline-offset:1px}
   position:relative; width:100%; min-height:96px; box-sizing:border-box; padding:12px;
   display:flex; align-items:center; justify-content:center; text-align:center;
   border-radius:18px; border:1px solid var(--line); cursor:pointer; color:var(--fg);
-  font:600 15px/1.25 "Noto Sans JP", system-ui, sans-serif;
+  font:600 15px/1.25 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   background:var(--surface2); transition:transform .12s ease;
 }
 .tile{content-visibility:auto; contain-intrinsic-size:auto 96px}
 .tile:active{transform:scale(.94)}
-.tile::after{content:""; position:absolute; top:9px; right:9px; width:7px; height:7px; border-radius:50%; background:var(--vermilion)}
 .tile-name{display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; overflow-wrap:anywhere}
 .enter{animation:rise .45s cubic-bezier(.2,.7,.2,1) both; animation-delay:calc(var(--i,0) * 35ms)}
 
 .fab{
   position:fixed; right:max(16px, env(safe-area-inset-right,0px)); bottom:max(18px, env(safe-area-inset-bottom,0px));
-  border:0; border-radius:16px; padding:14px 18px; background:var(--gold); color:#14110F;
-  font:700 15px "Noto Sans JP", system-ui, sans-serif; cursor:pointer;
+  border:0; border-radius:16px; padding:14px 18px; background:var(--gold); color:var(--on-accent);
+  font:700 15px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; cursor:pointer;
 }
 .btn{
   padding:12px 16px; border-radius:14px; border:1px solid var(--line); background:transparent; color:var(--fg);
-  font:600 15px "Noto Sans JP", system-ui, sans-serif; cursor:pointer;
+  font:600 15px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; cursor:pointer;
 }
 .btn.small{padding:8px 12px; font-size:13px}
-.btn.primary{background:var(--gold); color:#14110F; border-color:transparent}
+.btn.primary{background:var(--gold); color:var(--on-accent); border-color:transparent}
 .btn.danger{color:var(--vermilion)}
 .btn:disabled{opacity:.6}
 .actions{display:flex; gap:10px; margin-top:16px; flex-wrap:wrap}
 .actions .btn{flex:1 1 140px}
 
 .card{background:var(--surface); border:1px solid var(--line); border-radius:18px; padding:16px; margin-bottom:14px; min-width:0}
-.dtitle{font:700 22px/1.25 "Noto Serif JP", serif; margin:10px 0 12px; overflow-wrap:anywhere}
+.dtitle{font:700 22px/1.25 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; margin:10px 0 12px; overflow-wrap:anywhere}
 .porrow{display:flex; align-items:center; gap:8px; flex-wrap:wrap}
 .porrow input{width:110px; text-align:center}
 
@@ -95,7 +91,7 @@ input:focus, textarea:focus{outline:2px solid var(--gold); outline-offset:1px}
 .row2{display:flex; justify-content:space-between; gap:10px; padding:6px 0; border-bottom:1px dashed var(--line)}
 .row2 span:first-child{overflow-wrap:anywhere; min-width:0}
 .eye{color:var(--muted); justify-self:end; display:block}
-.sub2{font:600 14px/1.3 "Noto Sans JP", system-ui, sans-serif; color:var(--muted); margin:4px 0 6px}
+.sub2{font:600 14px/1.3 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; color:var(--muted); margin:4px 0 6px}
 .prose{white-space:pre-wrap; margin:0 0 12px; overflow-wrap:anywhere}
 
 .lbl{display:block; margin:12px 0 6px; color:var(--muted); font-size:14px}
@@ -107,9 +103,17 @@ input:focus, textarea:focus{outline:2px solid var(--gold); outline-offset:1px}
 .msg{color:var(--vermilion); min-height:1.4em}
 .status{color:var(--vermilion)}
 .nav{margin:4px 0}
+.filter-btn{white-space:nowrap; padding:12px 14px}
+.filter-btn.on{background:var(--gold); color:var(--on-accent); border-color:transparent}
+.chips{display:flex; gap:8px; flex-wrap:wrap; margin:0 0 10px}
+.chip{padding:8px 14px; border-radius:999px; border:1px solid var(--line); background:var(--surface); color:var(--fg); font:600 14px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; cursor:pointer}
+.chip.on{background:var(--gold); color:var(--on-accent); border-color:transparent}
+.tags{display:flex; gap:6px; flex-wrap:wrap; margin:-4px 0 12px}
+.tags:empty{display:none}
+.tag{font-size:12px; padding:3px 10px; border-radius:999px; background:var(--surface2); color:var(--muted)}
 
 .login{max-width:380px; margin:8vh auto 0; display:flex; flex-direction:column; gap:12px; text-align:center}
-.login .dance{height:96px; align-self:center}
+.logo{width:120px; height:120px; object-fit:cover; border-radius:24px; align-self:center}
 .splash{display:flex; justify-content:center; padding-top:30vh; color:var(--muted)}
 </style>
 </head>
@@ -119,9 +123,8 @@ input:focus, textarea:focus{outline:2px solid var(--gold); outline-offset:1px}
 
 <section id="v-login" hidden>
   <div class="login">
-    <img class="dance" src="skeleton.gif" alt="">
+    <img class="logo" src="logo.jpg" alt="Ладушки">
     <h1>Ладушки салаты</h1>
-    <div class="sub">サラダ帖</div>
     <input id="em" type="email" placeholder="Email" autocomplete="username">
     <input id="pw" type="password" placeholder="Пароль" autocomplete="current-password">
     <button id="login-btn" class="btn primary">Войти</button>
@@ -131,11 +134,7 @@ input:focus, textarea:focus{outline:2px solid var(--gold); outline-offset:1px}
 
 <section id="v-list" hidden>
   <header class="top">
-    <img class="dance" src="skeleton.gif" alt="">
-    <div>
-      <h1>Ладушки салаты</h1>
-      <div class="sub">サラダ帖</div>
-    </div>
+    <h1>Ладушки салаты</h1>
     <div class="hdr-actions">
       <button id="export" class="btn small" title="Резервная копия">Копия</button>
       <button id="logout" class="btn small">Выйти</button>
@@ -143,6 +142,12 @@ input:focus, textarea:focus{outline:2px solid var(--gold); outline-offset:1px}
   </header>
   <div class="bar">
     <input id="search" type="search" placeholder="Поиск салата" autocomplete="off">
+    <button id="filter-btn" class="btn filter-btn" aria-expanded="false">Фильтр</button>
+  </div>
+  <div id="filter-row" class="chips" hidden>
+    <button class="chip" data-tag="">Все</button>
+    <button class="chip" data-tag="майонезный">Майонезный</button>
+    <button class="chip" data-tag="овощной">Овощной</button>
   </div>
   <div id="count" class="muted" style="font-size:13px; margin-bottom:8px"></div>
   <p id="status" class="status" hidden></p>
@@ -154,6 +159,7 @@ input:focus, textarea:focus{outline:2px solid var(--gold); outline-offset:1px}
 <section id="v-detail" hidden>
   <div class="nav"><button id="d-back" class="btn">← Назад</button></div>
   <h2 id="d-title" class="dtitle"></h2>
+  <div id="d-tags" class="tags"></div>
   <div class="card">
     <p id="d-out" class="muted" style="margin:0 0 12px"></p>
     <label class="porrow">Порций по 100 г:
@@ -175,6 +181,11 @@ input:focus, textarea:focus{outline:2px solid var(--gold); outline-offset:1px}
     <label class="lbl">Название салата
       <input id="e-name" type="text" autocomplete="off">
     </label>
+    <p class="lbl" style="margin-bottom:8px">Теги</p>
+    <div id="e-tags" class="chips">
+      <button class="chip" data-tag="майонезный">Майонезный</button>
+      <button class="chip" data-tag="овощной">Овощной</button>
+    </div>
     <p class="lbl" style="margin-bottom:8px">Продукты: граммы на партию <span style="font-size:12px">(без граммов — значок глаза, «на глаз»)</span></p>
     <div id="e-rows"></div>
     <button id="e-addrow" class="btn">+ Добавить продукт</button>
@@ -250,6 +261,9 @@ let role = 'user';
 const CAN_DELETE = ['admin', 'manager', 'cook'];   // «пользователь» (user) удалять не может
 let loggedIn = false;
 let extraColumns = true;   // false, если миграция 002 ещё не выполнена
+let hasTags = true;        // false, если миграция 004 (теги) ещё не выполнена
+let tagFilter = '';
+const TAG_LABEL = { 'майонезный': 'Майонезный', 'овощной': 'Овощной' };
 let current = null;
 let editing = null;
 let portions = 10;
@@ -271,6 +285,7 @@ function fromDb(row) {
     finalWeight: row.final_weight ? Number(row.final_weight) : null,
     dressing: row.dressing || '',
     method: row.method || '',
+    tags: Array.isArray(row.tags) ? row.tags : [],
     items: (row.ingredients || [])
       .slice()
       .sort((a, b) => a.position - b.position)
@@ -278,11 +293,16 @@ function fromDb(row) {
   };
 }
 async function loadSalads() {
-  let res = await sb.from('salads').select('id,name,final_weight,dressing,method,ingredients(name,grams,position)');
-  if (res.error && /dressing|method/i.test(res.error.message || '')) {
-    // миграция 002 не выполнена: работаем без новых полей
-    extraColumns = false;
-    res = await sb.from('salads').select('id,name,final_weight,ingredients(name,grams,position)');
+  // если какие-то миграции ещё не выполнены, просто не запрашиваем эти поля
+  const cols = () => ['id,name,final_weight', extraColumns ? 'dressing,method' : '', hasTags ? 'tags' : '',
+    'ingredients(name,grams,position)'].filter(Boolean).join(',');
+  let res = await sb.from('salads').select(cols());
+  for (let tries = 0; res.error && tries < 2; tries++) {
+    const m = res.error.message || '';
+    if (hasTags && /tags/i.test(m)) hasTags = false;
+    else if (extraColumns && /dressing|method/i.test(m)) extraColumns = false;
+    else break;
+    res = await sb.from('salads').select(cols());
   }
   if (res.error) throw res.error;
   salads = res.data.map(fromDb).sort((a, b) => sortKey(a.name).localeCompare(sortKey(b.name), 'ru'));
@@ -304,6 +324,7 @@ async function saveSalad(rec) {
   let id = rec.id;
   const row = { name: rec.name, final_weight: rec.finalWeight || null, updated_at: new Date().toISOString() };
   if (extraColumns) { row.dressing = rec.dressing || null; row.method = rec.method || null; }
+  if (hasTags) row.tags = rec.tags || [];
   if (id) {
     const { error } = await sb.from('salads').update(row).eq('id', id);
     if (error) throw error;
@@ -339,7 +360,7 @@ async function startApp() {
     await loadSalads();
     await seedIfEmpty();
     if (!salads.length) await loadSalads();
-    if (!extraColumns) setStatus('Заправка, способ приготовления и продукты без граммов заработают после SQL-миграции 002 в Supabase.');
+    if (!extraColumns || !hasTags) setStatus('Часть функций (заправка, продукты без граммов, теги) заработает после SQL-миграций в Supabase.');
   } catch (e) {
     setStatus('Не удалось загрузить данные: ' + errText(e));
   }
@@ -376,7 +397,10 @@ async function signOut() {
 // ---------- список ----------
 function renderList() {
   const q = $('#search').value.trim().toLowerCase();
-  const items = salads.filter((s) => !q || s.name.toLowerCase().includes(q));
+  const items = salads.filter((s) => (!q || s.name.toLowerCase().includes(q)) && (!tagFilter || s.tags.includes(tagFilter)));
+  $('#filter-btn').textContent = tagFilter ? TAG_LABEL[tagFilter] : 'Фильтр';
+  $('#filter-btn').classList.toggle('on', !!tagFilter);
+  for (const c of document.querySelectorAll('#filter-row .chip')) c.classList.toggle('on', c.dataset.tag === tagFilter);
   $('#count').textContent = salads.length ? `${items.length} из ${salads.length}` : '';
   $('#grid').innerHTML = items.map((s, i) =>
     `<button class="tile ${i < 12 ? 'enter' : ''}" style="--i:${i}" data-id="${esc(s.id)}"><span class="tile-name">${esc(s.name)}</span></button>`
@@ -389,6 +413,7 @@ function renderDetail() {
   const s = salads.find((x) => x.id === current);
   if (!s) { show('list'); renderList(); return; }
   $('#d-title').textContent = s.name;
+  $('#d-tags').innerHTML = s.tags.map((t) => `<span class="tag">${esc(TAG_LABEL[t] || t)}</span>`).join('');
   const out = outWeight(s);
   $('#d-out').textContent = `Выход готового салата: ${fmtGrams(out)} г${Number(s.finalWeight) > 0 ? ' (после готовки)' : ''}`;
   if (!s.items.length) {
@@ -449,6 +474,7 @@ function openEdit(id) {
     finalWeight: s && Number(s.finalWeight) > 0 ? String(s.finalWeight) : '',
     dressing: s ? s.dressing : '',
     method: s ? s.method : '',
+    tags: s ? [...s.tags] : [],
     items: s && s.items.length ? s.items.map((i) => ({ name: i.name, grams: hasG(i) ? String(i.grams) : '' })) : [{ name: '', grams: '' }],
   };
   $('#e-title').textContent = s ? 'Редактирование' : 'Новый салат';
@@ -456,10 +482,14 @@ function openEdit(id) {
   $('#e-final').value = editing.finalWeight;
   $('#e-dressing').value = editing.dressing;
   $('#e-method').value = editing.method;
+  renderEditTags();
   $('#e-msg').textContent = '';
   renderEditRows();
   updatePreview();
   show('edit');
+}
+function renderEditTags() {
+  for (const c of document.querySelectorAll('#e-tags .chip')) c.classList.toggle('on', editing.tags.includes(c.dataset.tag));
 }
 function renderEditRows() {
   $('#e-rows').innerHTML = editing.items.map((it, i) =>
@@ -492,7 +522,6 @@ async function saveEdit() {
     .map((i) => ({ name: i.name, grams: i.grams > 0 ? i.grams : null }));
   const msg = (t) => { $('#e-msg').textContent = t; };
   if (!name) return msg('Введите название салата');
-  if (!items.length) return msg('Добавьте хотя бы один продукт');
   if (!extraColumns && items.some((i) => i.grams == null)) {
     return msg('Продукты без граммов можно сохранять после SQL-миграции 002 в Supabase');
   }
@@ -507,6 +536,7 @@ async function saveEdit() {
       items,
       dressing: (editing.dressing || '').trim(),
       method: (editing.method || '').trim(),
+      tags: editing.tags,
     });
     await loadSalads();
     renderList();
@@ -522,7 +552,7 @@ async function saveEdit() {
 function exportData() {
   const data = {
     app: 'salad-book', version: 3,
-    recipes: salads.map((s) => ({ name: s.name, finalWeight: s.finalWeight, dressing: s.dressing, method: s.method, items: s.items })),
+    recipes: salads.map((s) => ({ name: s.name, finalWeight: s.finalWeight, dressing: s.dressing, method: s.method, tags: s.tags, items: s.items })),
   };
   const text = JSON.stringify(data, null, 2);
   if (window.AndroidApp && window.AndroidApp.shareText) { window.AndroidApp.shareText(text); return; }
@@ -573,6 +603,24 @@ $('#e-addrow').addEventListener('click', () => {
   editing.items.push({ name: '', grams: '' });
   renderEditRows();
   updatePreview();
+});
+$('#filter-btn').addEventListener('click', () => {
+  const r = $('#filter-row');
+  r.hidden = !r.hidden;
+  $('#filter-btn').setAttribute('aria-expanded', String(!r.hidden));
+});
+$('#filter-row').addEventListener('click', (e) => {
+  const c = e.target.closest('.chip');
+  if (!c) return;
+  tagFilter = c.dataset.tag;
+  renderList();
+});
+$('#e-tags').addEventListener('click', (e) => {
+  const c = e.target.closest('.chip');
+  if (!c) return;
+  const t = c.dataset.tag;
+  editing.tags = editing.tags.includes(t) ? editing.tags.filter((x) => x !== t) : [...editing.tags, t];
+  renderEditTags();
 });
 $('#e-save').addEventListener('click', saveEdit);
 $('#e-cancel').addEventListener('click', () => {
