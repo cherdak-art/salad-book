@@ -136,7 +136,6 @@ input:focus, textarea:focus{outline:2px solid var(--gold); outline-offset:1px}
   <header class="top">
     <h1>Ладушки салаты</h1>
     <div class="hdr-actions">
-      <button id="export" class="btn small" title="Резервная копия">Копия</button>
       <button id="logout" class="btn small">Выйти</button>
     </div>
   </header>
@@ -548,27 +547,10 @@ async function saveEdit() {
   }
 }
 
-// ---------- резервная копия ----------
-function exportData() {
-  const data = {
-    app: 'salad-book', version: 3,
-    recipes: salads.map((s) => ({ name: s.name, finalWeight: s.finalWeight, dressing: s.dressing, method: s.method, tags: s.tags, items: s.items })),
-  };
-  const text = JSON.stringify(data, null, 2);
-  if (window.AndroidApp && window.AndroidApp.shareText) { window.AndroidApp.shareText(text); return; }
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(new Blob([text], { type: 'application/json' }));
-  a.download = 'salaty-' + new Date().toISOString().slice(0, 10) + '.json';
-  document.body.appendChild(a);
-  a.click();
-  setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
-}
-
 // ---------- события ----------
 $('#login-btn').addEventListener('click', signIn);
 $('#pw').addEventListener('keydown', (e) => { if (e.key === 'Enter') signIn(); });
 $('#logout').addEventListener('click', signOut);
-$('#export').addEventListener('click', exportData);
 $('#search').addEventListener('input', renderList);
 $('#grid').addEventListener('click', (e) => {
   const b = e.target.closest('.tile');
